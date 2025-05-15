@@ -42,6 +42,7 @@ class MyApp extends StatelessWidget {
 // It includes a counter that increments when a button is pressed.
 // The app is structured with a main function that runs the MyApp widget,
 // Paola is absent
+//lalalalalala
 // le particulier has bad music taste
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -49,6 +50,7 @@ class MyHomePage extends StatefulWidget {
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
   // how it looks.
+  //Brighton is the best
 
   // This class is the configuration for the state. It holds the values (in this
   // case the title) provided by the parent (in this case the App widget) and
