@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
 // widgets, the MaterialApp widget, and the Scaffold widget.
 // It includes a counter that increments when a button is pressed.
 // The app is structured with a main function that runs the MyApp widget,
-
+// Paola is absent
 // le particulier has bad music taste
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
