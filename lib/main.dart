@@ -35,6 +35,11 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// Github Push Test1
+// This is a basic Flutter application that demonstrates the use of stateful
+// widgets, the MaterialApp widget, and the Scaffold widget.
+// It includes a counter that increments when a button is pressed.
+// The app is structured with a main function that runs the MyApp widget,
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
