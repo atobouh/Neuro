@@ -1,15 +1,74 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter/services.dart';
 
 void main() {
-  runApp(const MaterialApp(home: SettingsPage()));
+  runApp(const MyApp());
 }
 
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  Locale _locale = const Locale('en');
+
+  void setLocale(Locale locale) {
+    setState(() {
+      _locale = locale;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      locale: _locale,
+      title: 'Localized App',
+      theme: ThemeData(
+        fontFamily: 'OpenDyslexic',
+      ),
+      home: SettingsPage(
+        locale: _locale,
+        onLocaleChange: setLocale,
+      ),
+    );
+  }
+}
+
+// Localization strings
+const localizedStrings = {
+  'en': {
+    'settings': 'Settings',
+    'name': 'Name',
+    'age': 'Age',
+    'music': 'Music',
+    'sfx': 'SFX',
+    'language': 'Language',
+    'erase': 'Erase Data',
+    'credits': 'App Developed By The NeuroPlay Team',
+  },
+  'fr': {
+    'settings': 'Paramètres',
+    'name': 'Nom',
+    'age': 'Âge',
+    'music': 'Musique',
+    'sfx': 'Effets sonores',
+    'language': 'Langue',
+    'erase': 'Effacer les données',
+    'credits': "Développé par l'équipe NeuroPlay",
+  },
+};
+
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key});
+  final Locale locale;
+  final Function(Locale) onLocaleChange;
+
+  const SettingsPage({super.key, required this.locale, required this.onLocaleChange});
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -18,23 +77,35 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   bool musicEnabled = true;
   bool sfxEnabled = true;
-  String selectedLanguage = "English";
   String name = "";
   String age = "";
   File? profileImage;
   Uint8List? webImage;
-
-  final List<String> languages = ["English", "French",];
   final picker = ImagePicker();
+
+  late String selectedLanguage;
+  final List<String> languages = ['English', 'French'];
+
+  @override
+  void initState() {
+    super.initState();
+    selectedLanguage = widget.locale.languageCode == 'fr' ? 'French' : 'English';
+  }
 
   Future<void> pickImage() async {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       if (kIsWeb) {
         final bytes = await pickedFile.readAsBytes();
-        setState(() => webImage = bytes);
+        setState(() {
+          webImage = bytes;
+          profileImage = null;
+        });
       } else {
-        setState(() => profileImage = File(pickedFile.path));
+        setState(() {
+          profileImage = File(pickedFile.path);
+          webImage = null;
+        });
       }
     }
   }
@@ -45,18 +116,22 @@ class _SettingsPageState extends State<SettingsPage> {
       age = "";
       musicEnabled = true;
       sfxEnabled = true;
-      selectedLanguage = "English";
       profileImage = null;
       webImage = null;
+      selectedLanguage = 'English';
+      widget.onLocaleChange(const Locale('en'));
     });
+  }
+
+  String t(String key) {
+    return localizedStrings[widget.locale.languageCode]?[key] ?? key;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(t('settings'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         centerTitle: true,
         backgroundColor: const Color(0xFF2A9C8A),
       ),
@@ -72,25 +147,26 @@ class _SettingsPageState extends State<SettingsPage> {
                   CircleAvatar(
                     radius: 50,
                     backgroundImage: kIsWeb
-                        ? (webImage != null
-                        ? MemoryImage(webImage!)
-                        : null)
-                        : (profileImage != null
-                        ? FileImage(profileImage!)
-                        : null) as ImageProvider<Object>?,
+                        ? (webImage != null ? MemoryImage(webImage!) : null)
+                        : (profileImage != null ? FileImage(profileImage!) : null)
+                    as ImageProvider<Object>?,
                     backgroundColor: Colors.grey[300],
                     child: (profileImage == null && webImage == null)
                         ? const Icon(Icons.person, size: 50)
                         : null,
                   ),
-                  Positioned(
-                    child: InkWell(
-                      onTap: pickImage,
-                      child: const CircleAvatar(
-                        radius: 16,
-                        backgroundColor: Colors.white,
-                        child: Icon(Icons.camera_alt, size: 18),
-                      ),
+                  InkWell(
+                    onTap: pickImage,
+                    onLongPress: () {
+                      setState(() {
+                        profileImage = null;
+                        webImage = null;
+                      });
+                    },
+                    child: const CircleAvatar(
+                      radius: 16,
+                      backgroundColor: Colors.white,
+                      child: Icon(Icons.camera_alt, size: 18),
                     ),
                   ),
                 ],
@@ -98,37 +174,52 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             const SizedBox(height: 16),
             TextField(
-              decoration: const InputDecoration(
-                labelText: "Name",
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: t("name"),
+                border: const OutlineInputBorder(),
               ),
               onChanged: (val) => setState(() => name = val),
             ),
             const SizedBox(height: 12),
             TextField(
-              decoration: const InputDecoration(
-                labelText: "Age",
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: t("age"),
+                border: const OutlineInputBorder(),
               ),
               keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               onChanged: (val) => setState(() => age = val),
             ),
             const SizedBox(height: 16),
-            _buildToggleTile("Music", musicEnabled, (val) {
-              setState(() => musicEnabled = val);
-            }),
-            _buildToggleTile("SFX", sfxEnabled, (val) {
-              setState(() => sfxEnabled = val);
-            }),
-            _buildDropdownTile(
-              title: "Language",
-              options: languages,
-              selected: selectedLanguage,
-              onChanged: (val) {
-                if (val != null) {
-                  setState(() => selectedLanguage = val);
-                }
-              },
+            SwitchListTile(
+              title: Text(t("music")),
+              value: musicEnabled,
+              onChanged: (val) => setState(() => musicEnabled = val),
+            ),
+            SwitchListTile(
+              title: Text(t("sfx")),
+              value: sfxEnabled,
+              onChanged: (val) => setState(() => sfxEnabled = val),
+            ),
+            ListTile(
+              title: Text(t("language")),
+              trailing: DropdownButton<String>(
+                value: selectedLanguage,
+                onChanged: (String? value) {
+                  if (value != null) {
+                    setState(() {
+                      selectedLanguage = value;
+                      widget.onLocaleChange(Locale(value == 'French' ? 'fr' : 'en'));
+                    });
+                  }
+                },
+                items: languages.map((lang) {
+                  return DropdownMenuItem<String>(
+                    value: lang,
+                    child: Text(lang),
+                  );
+                }).toList(),
+              ),
             ),
             const SizedBox(height: 10),
             Align(
@@ -140,45 +231,26 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 onPressed: eraseData,
                 icon: const Icon(Icons.delete, size: 20),
-                label: const Text("Erase Data", style: TextStyle(fontSize: 14)),
+                label: Text(t("erase"), style: const TextStyle(fontSize: 14)),
               ),
             ),
             const SizedBox(height: 20),
-            const ListTile(
-              title: Text("Credits"),
-              subtitle: Text('App Developped By The NeuroPlay Team')
+            Padding(
+              padding: const EdgeInsets.only(top: 24.0),
+              child: Center(
+                child: Text(
+                  t("credits"),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontStyle: FontStyle.italic,
+                    fontSize: 14,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildToggleTile(String title, bool value, ValueChanged<bool> onChanged) {
-    return SwitchListTile(
-      title: Text(title),
-      value: value,
-      onChanged: onChanged,
-    );
-  }
-
-  Widget _buildDropdownTile({
-    required String title,
-    required List<String> options,
-    required String selected,
-    required ValueChanged<String?> onChanged,
-  }) {
-    return ListTile(
-      title: Text(title),
-      trailing: DropdownButton<String>(
-        value: selected,
-        items: options.map((String option) {
-          return DropdownMenuItem<String>(
-            value: option,
-            child: Text(option),
-          );
-        }).toList(),
-        onChanged: onChanged,
       ),
     );
   }
