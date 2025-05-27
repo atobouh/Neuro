@@ -136,7 +136,7 @@ class _SettingsPageState extends State<SettingsPage> {
         backgroundColor: const Color(0xFF2A9C8A),
       ),
       body: Container(
-        color: const Color(0xFFBFD7EA),
+        color: const Color(0xFFBFD7EB),
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
