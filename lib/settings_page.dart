@@ -133,10 +133,10 @@ class _SettingsPageState extends State<SettingsPage> {
       appBar: AppBar(
         title: Text(t('settings'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         centerTitle: true,
-        backgroundColor: const Color(0xFF2A9C8A),
+        backgroundColor: const Color(0xFF2CB9B0),
       ),
       body: Container(
-        color: const Color(0xFFBFD7EB),
+        color: const Color(0xFFE3FAF9),
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
@@ -177,6 +177,9 @@ class _SettingsPageState extends State<SettingsPage> {
               decoration: InputDecoration(
                 labelText: t("name"),
                 border: const OutlineInputBorder(),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Color(0xFF2CB9B0)),
+                ),
               ),
               onChanged: (val) => setState(() => name = val),
             ),
@@ -185,21 +188,42 @@ class _SettingsPageState extends State<SettingsPage> {
               decoration: InputDecoration(
                 labelText: t("age"),
                 border: const OutlineInputBorder(),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Color(0xFF2CB9B0)),
+                ),
               ),
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               onChanged: (val) => setState(() => age = val),
             ),
             const SizedBox(height: 16),
-            SwitchListTile(
+            ListTile(
               title: Text(t("music")),
-              value: musicEnabled,
-              onChanged: (val) => setState(() => musicEnabled = val),
+              trailing: Switch(
+                value: musicEnabled,
+                onChanged: (val) => setState(() => musicEnabled = val),
+                thumbColor: MaterialStateProperty.all(Colors.white),
+                trackColor: MaterialStateProperty.resolveWith((states) {
+                  if (states.contains(MaterialState.selected)) {
+                    return const Color(0xFF2CB9B0);
+                  }
+                  return Colors.grey.shade400;
+                }),
+              ),
             ),
-            SwitchListTile(
+            ListTile(
               title: Text(t("sfx")),
-              value: sfxEnabled,
-              onChanged: (val) => setState(() => sfxEnabled = val),
+              trailing: Switch(
+                value: sfxEnabled,
+                onChanged: (val) => setState(() => sfxEnabled = val),
+                thumbColor: MaterialStateProperty.all(Colors.white),
+                trackColor: MaterialStateProperty.resolveWith((states) {
+                  if (states.contains(MaterialState.selected)) {
+                    return const Color(0xFF2CB9B0);
+                  }
+                  return Colors.grey.shade400;
+                }),
+              ),
             ),
             ListTile(
               title: Text(t("language")),
